@@ -35,9 +35,9 @@ var opts struct {
 	CollectorIP   string `short:"t" long:"target" description:"target ip address of the netflow collector"`
 	CollectorPort string `short:"p" long:"port" description:"port number of the target netflow collector"`
 	SpikeProto    string `short:"s" long:"spike" description:"run a second thread generating a spike for the specified protocol"`
-    FalseIndex    bool   `short:"f" long:"false-index" description:"generate false SNMP interface indexes, otherwise set to 0"`
-    FlowCount     int    `short:"c" long:"flow-count" description:"set the number of flows to generate in each iteration" default:"16" max:"128" min:"8"`
-    Help          bool   `short:"h" long:"help" description:"show nflow-generator help"`
+	FalseIndex    bool   `short:"f" long:"false-index" description:"generate false SNMP interface indexes, otherwise set to 0"`
+	FlowCount     int    `short:"c" long:"flow-count" description:"set the number of flows to generate in each iteration" default:"16" max:"128" min:"8"`
+	Help          bool   `short:"h" long:"help" description:"show nflow-generator help"`
 }
 
 func main() {
@@ -68,34 +68,40 @@ func main() {
 		"Use ctrl^c to terminate the app.", opts.CollectorIP, opts.CollectorPort)
 
 	for {
-		rand.Seed(time.Now().Unix())
-		n := randomNum(50, 1000)
-		// add spike data
-		if opts.SpikeProto != "" {
-			GenerateSpike()
+		//rand.Seed(time.Now().Unix())
+		//n := randomNum(50, 1000)
+		//// add spike data
+		//if opts.SpikeProto != "" {
+		//	GenerateSpike()
+		//}
+		//if n > 900 {
+		//	data := GenerateNetflow(8)
+		//	buffer := BuildNFlowPayload(data)
+		//	_, err := conn.Write(buffer.Bytes())
+		//	if err != nil {
+		//		log.Fatal("Error connecting to the target collector: ", err)
+		//	}
+		//} else {
+		//	data := GenerateNetflow(opts.FlowCount)
+		//	buffer := BuildNFlowPayload(data)
+		//	_, err := conn.Write(buffer.Bytes())
+		//	if err != nil {
+		//		log.Fatal("Error connecting to the target collector: ", err)
+		//	}
+		//}
+		//// add some periodic spike data
+		//if n < 150 {
+		//	sleepInt := time.Duration(3000)
+		//	time.Sleep(sleepInt * time.Millisecond)
+		//}
+		//sleepInt := time.Duration(n)
+		data := GenerateNetflow(opts.FlowCount)
+		buffer := BuildNFlowPayload(data)
+		_, err := conn.Write(buffer.Bytes())
+		if err != nil {
+			log.Fatal("Error connecting to the target collector: ", err)
 		}
-		if n > 900 {
-			data := GenerateNetflow(8)
-			buffer := BuildNFlowPayload(data)
-			_, err := conn.Write(buffer.Bytes())
-			if err != nil {
-				log.Fatal("Error connecting to the target collector: ", err)
-			}
-		} else {
-			data := GenerateNetflow(opts.FlowCount)
-			buffer := BuildNFlowPayload(data)
-			_, err := conn.Write(buffer.Bytes())
-			if err != nil {
-				log.Fatal("Error connecting to the target collector: ", err)
-			}
-		}
-		// add some periodic spike data
-		if n < 150 {
-			sleepInt := time.Duration(3000)
-			time.Sleep(sleepInt * time.Millisecond)
-		}
-		sleepInt := time.Duration(n)
-		time.Sleep(sleepInt * time.Millisecond)
+		time.Sleep(1 * time.Millisecond)
 	}
 }
 
