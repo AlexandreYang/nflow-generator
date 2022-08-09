@@ -36,7 +36,10 @@ var opts struct {
 	CollectorPort string `short:"p" long:"port" description:"port number of the target netflow collector"`
 	SpikeProto    string `short:"s" long:"spike" description:"run a second thread generating a spike for the specified protocol"`
 	FalseIndex    bool   `short:"f" long:"false-index" description:"generate false SNMP interface indexes, otherwise set to 0"`
-	FlowCount     int    `short:"c" long:"flow-count" description:"set the number of flows to generate in each iteration" default:"16" max:"128" min:"8"`
+	Duration      int    `short:"d" long:"duration" description:"total duration time in milliseconds" default:"10000"`
+	Interval      int    `short:"u" long:"interval" description:"interval between each batch in milliseconds" default:"1000"`
+	FlowCount     int    `short:"c" long:"flow-count" description:"flow per interval" default:"100"`
+	BatchSize     int    `short:"b" long:"batch-size" description:"batch size" default:"100"`
 	Help          bool   `short:"h" long:"help" description:"show nflow-generator help"`
 }
 
@@ -67,41 +70,58 @@ func main() {
 	log.Infof("sending netflow data to a collector ip: %s and port: %s. \n"+
 		"Use ctrl^c to terminate the app.", opts.CollectorIP, opts.CollectorPort)
 
-	for {
-		//rand.Seed(time.Now().Unix())
-		//n := randomNum(50, 1000)
-		//// add spike data
-		//if opts.SpikeProto != "" {
-		//	GenerateSpike()
-		//}
-		//if n > 900 {
-		//	data := GenerateNetflow(8)
-		//	buffer := BuildNFlowPayload(data)
-		//	_, err := conn.Write(buffer.Bytes())
-		//	if err != nil {
-		//		log.Fatal("Error connecting to the target collector: ", err)
-		//	}
-		//} else {
-		//	data := GenerateNetflow(opts.FlowCount)
-		//	buffer := BuildNFlowPayload(data)
-		//	_, err := conn.Write(buffer.Bytes())
-		//	if err != nil {
-		//		log.Fatal("Error connecting to the target collector: ", err)
-		//	}
-		//}
-		//// add some periodic spike data
-		//if n < 150 {
-		//	sleepInt := time.Duration(3000)
-		//	time.Sleep(sleepInt * time.Millisecond)
-		//}
-		//sleepInt := time.Duration(n)
-		data := GenerateNetflow(opts.FlowCount)
-		buffer := BuildNFlowPayload(data)
-		_, err := conn.Write(buffer.Bytes())
-		if err != nil {
-			log.Fatal("Error connecting to the target collector: ", err)
+	ticker := time.NewTicker(time.Duration(opts.Interval) * time.Millisecond)
+	done := make(chan bool)
+
+	start := time.Now()
+
+	var total int
+	go func() {
+
+		for {
+			select {
+			case <-done:
+				return
+			case t := <-ticker.C:
+				fmt.Println("Tick at", t)
+
+				iterations := opts.FlowCount / opts.BatchSize
+				remainder := opts.FlowCount % opts.BatchSize
+				for i := 0; i < iterations; i++ {
+					total += opts.BatchSize
+					generate(conn, opts.BatchSize)
+				}
+
+				if remainder > 0 {
+					total += remainder
+					generate(conn, remainder)
+				}
+
+				//total += opts.FlowCount
+				flowPerSec := float64(total) / (float64(time.Since(start).Microseconds() / 1000000))
+				fmt.Printf("\tCumulative flows send %d, flows per sec: %.2f\n", total, flowPerSec)
+			}
 		}
-		time.Sleep(1 * time.Millisecond)
+
+	}()
+
+	if opts.Duration == 0 {
+		// block forever
+		select {}
+	} else {
+		time.Sleep(time.Duration(opts.Duration) * time.Millisecond)
+		ticker.Stop()
+		done <- true
+		fmt.Println("Ticker stopped")
+	}
+}
+
+func generate(conn *net.UDPConn, batchSize int) {
+	data := GenerateNetflow(batchSize)
+	buffer := BuildNFlowPayload(data)
+	_, err := conn.Write(buffer.Bytes())
+	if err != nil {
+		log.Fatal("Error connecting to the target collector: ", err)
 	}
 }
 

@@ -568,6 +568,7 @@ func FillCommonFields(
 		payload.SnmpInIndex = 2
 		payload.SnmpOutIndex = 1
 	}
+	payload.SnmpInIndex = genRandUint16(UINT16_MAX)
 
 	uptime := int(sysUptime)
 	payload.SysUptimeEnd = uint32(uptime - randomNum(10, 500))
