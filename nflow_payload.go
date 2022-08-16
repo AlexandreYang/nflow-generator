@@ -117,7 +117,7 @@ func CreateNFlowHeader(recordCount int) NetflowHeader {
 	sec := t / int64(time.Second)
 	nsec := t - sec*int64(time.Second)
 	sysUptime = uint32((t-StartTime)/int64(time.Millisecond)) + 1000
-	flowSequence++
+	flowSequence += uint32(recordCount)
 
 	// log.Infof("Time: %d; Seconds: %d; Nanoseconds: %d\n", t, sec, nsec)
 	// log.Infof("StartTime: %d; sysUptime: %d", StartTime, sysUptime)

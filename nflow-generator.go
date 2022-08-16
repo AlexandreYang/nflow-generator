@@ -39,7 +39,7 @@ var opts struct {
 	Duration      int    `short:"d" long:"duration" description:"total duration time in milliseconds" default:"10000"`
 	Interval      int    `short:"u" long:"interval" description:"interval between each batch in milliseconds" default:"1000"`
 	FlowCount     int    `short:"c" long:"flow-count" description:"flow per interval" default:"100"`
-	BatchSize     int    `short:"b" long:"batch-size" description:"batch size" default:"100"`
+	BatchSize     int    `short:"b" long:"batch-size" description:"batch size" default:"30"`
 	Help          bool   `short:"h" long:"help" description:"show nflow-generator help"`
 }
 
