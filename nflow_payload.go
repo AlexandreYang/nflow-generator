@@ -505,11 +505,11 @@ func CreateMySqlFlow() NetflowPayload {
 func CreateRandomFlow() NetflowPayload {
 	payload := new(NetflowPayload)
 
-	payload.SrcIP = rand.Uint32()
-	payload.DstIP = rand.Uint32()
-	payload.NextHopIP = rand.Uint32()
+	payload.SrcIP = IPtoUint32("10.154.20.12")
+	payload.DstIP = IPtoUint32("77.12.190.94")
+	//payload.NextHopIP = rand.Uint32()
 	payload.SrcPort = genRandUint16(UINT16_MAX)
-	payload.DstPort = genRandUint16(UINT16_MAX)
+	payload.DstPort = 80
 	// payload.SnmpInIndex = genRandUint16(UINT16_MAX)
 	// payload.SnmpOutIndex = genRandUint16(UINT16_MAX)
 	// payload.NumPackets = genRandUint32(PAYLOAD_AVG_MD)
@@ -543,8 +543,8 @@ func FillCommonFields(
 	// payload.DstPort = uint16(MYSQL_PORT)
 	// payload.SnmpInIndex = genRandUint16(UINT16_MAX)
 	// payload.SnmpOutIndex = genRandUint16(UINT16_MAX)
-	payload.NumPackets = genRandUint32(numPktOct)
-	payload.NumOctets = genRandUint32(numPktOct)
+	payload.NumPackets = 1
+	payload.NumOctets = 10
 	// payload.SysUptimeStart = rand.Uint32()
 	// payload.SysUptimeEnd = rand.Uint32()
 	payload.Padding1 = 0
@@ -568,7 +568,7 @@ func FillCommonFields(
 		payload.SnmpInIndex = 2
 		payload.SnmpOutIndex = 1
 	}
-	payload.SnmpInIndex = genRandUint16(UINT16_MAX)
+	//payload.SnmpInIndex = genRandUint16(UINT16_MAX)
 
 	uptime := int(sysUptime)
 	payload.SysUptimeEnd = uint32(uptime - randomNum(10, 500))
