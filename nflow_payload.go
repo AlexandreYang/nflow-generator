@@ -506,11 +506,12 @@ func CreateRandomFlow() NetflowPayload {
 	payload := new(NetflowPayload)
 
 	payload.SrcIP = IPtoUint32("10.154.20.12")
-	payload.DstIP = IPtoUint32("77.12.190.94")
+	//payload.DstIP = IPtoUint32("77.12.190.94")
+	payload.DstIP = uint32(genRandUint16(UINT16_MAX))
 	//payload.NextHopIP = rand.Uint32()
 	payload.SrcPort = genRandUint16(UINT16_MAX)
 	payload.DstPort = 80
-	// payload.SnmpInIndex = genRandUint16(UINT16_MAX)
+	//payload.SnmpInIndex = genRandUint16(UINT16_MAX)
 	// payload.SnmpOutIndex = genRandUint16(UINT16_MAX)
 	// payload.NumPackets = genRandUint32(PAYLOAD_AVG_MD)
 	// payload.NumOctets = genRandUint32(PAYLOAD_AVG_MD)
