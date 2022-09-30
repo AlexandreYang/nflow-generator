@@ -502,15 +502,18 @@ func CreateMySqlFlow() NetflowPayload {
 	return *payload
 }
 
+var ipCounter uint32 = 0
+
 func CreateRandomFlow() NetflowPayload {
 	payload := new(NetflowPayload)
 
 	payload.SrcIP = IPtoUint32("10.154.20.12")
 	//payload.DstIP = IPtoUint32("77.12.190.94")
 	//payload.DstIP = uint32(genRandUint16(UINT16_MAX))
-	payload.DstIP = uint32(rand.Intn(1000000))
+	payload.DstIP = ipCounter
+	ipCounter += 1
 	//payload.NextHopIP = rand.Uint32()
-	payload.SrcPort = uint16(rand.Intn(1000))
+	payload.SrcPort = 22
 	payload.DstPort = 80
 	//payload.SnmpInIndex = genRandUint16(UINT16_MAX)
 	// payload.SnmpOutIndex = genRandUint16(UINT16_MAX)
