@@ -156,6 +156,7 @@ func CreateNFlowPayload(recordCount int) []NetflowPayload {
 	payload := make([]NetflowPayload, recordCount)
 	for i := 0; i < recordCount; i++ {
 		payload[i] = CreateRandomFlow()
+		//payload[i] = CreateCustomRandomFlow()
 		//payload[i] = CreateHttpFlow()
 		//payload[1] = CreateHttpsFlow()
 		//payload[2] = CreateHttpAltFlow()
@@ -503,6 +504,26 @@ func CreateMySqlFlow() NetflowPayload {
 }
 
 var ipCounter uint32 = 0
+
+func CreateCustomRandomFlow() NetflowPayload {
+	payload := new(NetflowPayload)
+	payload.SrcIP = IPtoUint32("1.1.1.1")
+	//if ipCounter > 3000000 {
+	//	ipCounter = 0
+	//}
+	randVal := uint32(rand.Intn(3000000))
+	payload.DstIP = randVal
+	//ipCounter += 1
+	if randVal%5 == 0 {
+		payload.SrcPort = genRandUint16(UINT16_MAX)
+	} else {
+		payload.SrcPort = 10000
+	}
+	payload.DstPort = 80
+
+	FillCommonFields(payload, PAYLOAD_AVG_MD, 6, rand.Intn(32))
+	return *payload
+}
 
 func CreateRandomFlow() NetflowPayload {
 	payload := new(NetflowPayload)

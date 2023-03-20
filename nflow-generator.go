@@ -37,6 +37,7 @@ var opts struct {
 	SpikeProto    string `short:"s" long:"spike" description:"run a second thread generating a spike for the specified protocol"`
 	FalseIndex    bool   `short:"f" long:"false-index" description:"generate false SNMP interface indexes, otherwise set to 0"`
 	Duration      int    `short:"d" long:"duration" description:"total duration time in milliseconds" default:"10000"`
+	Times         int    `short:"" long:"times" description:"how many times" default:"0"`
 	Interval      int    `short:"u" long:"interval" description:"interval between each batch in milliseconds" default:"1000"`
 	FlowCount     int    `short:"c" long:"flow-count" description:"flow per interval" default:"100"`
 	BatchSize     int    `short:"b" long:"batch-size" description:"batch size" default:"30"`
@@ -75,6 +76,8 @@ func main() {
 
 	start := time.Now()
 
+	count := 0
+
 	var total int
 	go func() {
 
@@ -83,6 +86,10 @@ func main() {
 			case <-done:
 				return
 			case t := <-ticker.C:
+				if count >= opts.Times {
+					return
+				}
+				count += 1
 				fmt.Println("Tick at", t)
 
 				iterations := opts.FlowCount / opts.BatchSize
