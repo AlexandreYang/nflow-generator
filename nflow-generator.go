@@ -90,7 +90,7 @@ func main() {
 					return
 				}
 				count += 1
-				fmt.Println("Tick at", t)
+				fmt.Printf("Tick at %s Count=%d\n", t, count)
 
 				iterations := opts.FlowCount / opts.BatchSize
 				remainder := opts.FlowCount % opts.BatchSize
