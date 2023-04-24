@@ -77,13 +77,15 @@ func main() {
 	start := time.Now()
 
 	go func() {
-		times := opts.Times - 1
+		loop(done, ticker, 0, opts.FlowCount, opts.Times, conn, start)
 
-		total := loop(done, ticker, 0, opts.FlowCount, times, conn, start)
-
-		times = 10
-		flowCount := opts.FlowCount / 10
-		loop(done, ticker, total, flowCount, times, conn, start)
+		//times := opts.Times - 1
+		//
+		//total := loop(done, ticker, 0, opts.FlowCount, times, conn, start)
+		//
+		//times = 20
+		//flowCount := opts.FlowCount / 20
+		//loop(done, ticker, total, flowCount, times, conn, start)
 
 	}()
 
