@@ -535,7 +535,7 @@ func CreateRandomFlow() NetflowPayload {
 	ipCounter += 1
 	//payload.NextHopIP = rand.Uint32()
 	payload.SrcPort = 22
-	payload.DstPort = 80
+	payload.DstPort = 81
 	//payload.SnmpInIndex = genRandUint16(UINT16_MAX)
 	// payload.SnmpOutIndex = genRandUint16(UINT16_MAX)
 	// payload.NumPackets = genRandUint32(PAYLOAD_AVG_MD)

@@ -76,39 +76,14 @@ func main() {
 
 	start := time.Now()
 
-	count := 0
-
-	var total int
 	go func() {
+		times := opts.Times - 1
 
-		for {
-			select {
-			case <-done:
-				return
-			case t := <-ticker.C:
-				if count >= opts.Times {
-					return
-				}
-				count += 1
-				fmt.Printf("Tick at %s Count=%d\n", t, count)
+		total := loop(done, ticker, 0, opts.FlowCount, times, conn, start)
 
-				iterations := opts.FlowCount / opts.BatchSize
-				remainder := opts.FlowCount % opts.BatchSize
-				for i := 0; i < iterations; i++ {
-					total += opts.BatchSize
-					generate(conn, opts.BatchSize)
-				}
-
-				if remainder > 0 {
-					total += remainder
-					generate(conn, remainder)
-				}
-
-				//total += opts.FlowCount
-				flowPerSec := float64(total) / (float64(time.Since(start).Microseconds() / 1000000))
-				fmt.Printf("\tCumulative flows send %d, flows per sec: %.2f\n", total, flowPerSec)
-			}
-		}
+		times = 10
+		flowCount := opts.FlowCount / 10
+		loop(done, ticker, total, flowCount, times, conn, start)
 
 	}()
 
@@ -121,6 +96,40 @@ func main() {
 		done <- true
 		fmt.Println("Ticker stopped")
 	}
+}
+
+func loop(done chan bool, ticker *time.Ticker, prevTotal int, flowCount int, times int, conn *net.UDPConn, start time.Time) int {
+	total := prevTotal
+	count := 0
+	for {
+		select {
+		case <-done:
+			return total
+		case t := <-ticker.C:
+			if count >= times {
+				return total
+			}
+			count += 1
+			fmt.Printf("Tick at %s Count=%d\n", t, count)
+
+			iterations := flowCount / opts.BatchSize
+			remainder := flowCount % opts.BatchSize
+			for i := 0; i < iterations; i++ {
+				total += opts.BatchSize
+				generate(conn, opts.BatchSize)
+			}
+
+			if remainder > 0 {
+				total += remainder
+				generate(conn, remainder)
+			}
+
+			//total += opts.FlowCount
+			flowPerSec := float64(total) / (float64(time.Since(start).Microseconds() / 1000000))
+			fmt.Printf("\tCumulative flows send %d, flows per sec: %.2f\n", total, flowPerSec)
+		}
+	}
+	return 0
 }
 
 func generate(conn *net.UDPConn, batchSize int) {
