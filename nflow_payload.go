@@ -94,9 +94,9 @@ func BuildNFlowPayload(data Netflow) bytes.Buffer {
 }
 
 //Generate a netflow packet w/ user-defined record count
-func GenerateNetflow(recordCount int) Netflow {
+func GenerateNetflow(recordCount int, engineId uint8) Netflow {
 	data := new(Netflow)
-	header := CreateNFlowHeader(recordCount)
+	header := CreateNFlowHeader(recordCount, engineId)
 	records := []NetflowPayload{}
 	//if recordCount == 8 {
 	//	// overwrite payload to add some variations for traffic spikes.
@@ -111,7 +111,7 @@ func GenerateNetflow(recordCount int) Netflow {
 }
 
 //Generate and initialize netflow header
-func CreateNFlowHeader(recordCount int) NetflowHeader {
+func CreateNFlowHeader(recordCount int, engineId uint8) NetflowHeader {
 
 	t := time.Now().UnixNano()
 	sec := t / int64(time.Second)
@@ -131,7 +131,7 @@ func CreateNFlowHeader(recordCount int) NetflowHeader {
 	h.UnixMsec = uint32(nsec)
 	h.FlowSequence = flowSequence
 	h.EngineType = 1
-	h.EngineId = 0
+	h.EngineId = engineId
 	h.SampleInterval = 0
 	return *h
 }

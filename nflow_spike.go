@@ -5,7 +5,7 @@ package main
 //Generate a netflow packet w/ user-defined record count
 func GenerateSpike() Netflow {
 	data := new(Netflow)
-	header := CreateNFlowHeader(1)
+	header := CreateNFlowHeader(1, 0)
 	records := []NetflowPayload{}
 	records = spikeFlowPayload()
 	data.Header = header

@@ -41,6 +41,7 @@ var opts struct {
 	Interval      int    `short:"u" long:"interval" description:"interval between each batch in milliseconds" default:"1000"`
 	FlowCount     int    `short:"c" long:"flow-count" description:"flow per interval" default:"100"`
 	BatchSize     int    `short:"b" long:"batch-size" description:"batch size" default:"30"`
+	EngineId      uint8  `short:"e" long:"engine-id" description:"engine id" default:"0"`
 	Help          bool   `short:"h" long:"help" description:"show nflow-generator help"`
 }
 
@@ -77,7 +78,7 @@ func main() {
 	start := time.Now()
 
 	go func() {
-		loop(done, ticker, 0, opts.FlowCount, opts.Times, conn, start)
+		loop(done, ticker, 0, opts.FlowCount, opts.Times, conn, start, opts.EngineId)
 
 		//times := opts.Times - 1
 		//
@@ -100,7 +101,7 @@ func main() {
 	}
 }
 
-func loop(done chan bool, ticker *time.Ticker, prevTotal int, flowCount int, times int, conn *net.UDPConn, start time.Time) int {
+func loop(done chan bool, ticker *time.Ticker, prevTotal int, flowCount int, times int, conn *net.UDPConn, start time.Time, engineId uint8) int {
 	total := prevTotal
 	count := 0
 	for {
@@ -116,14 +117,34 @@ func loop(done chan bool, ticker *time.Ticker, prevTotal int, flowCount int, tim
 
 			iterations := flowCount / opts.BatchSize
 			remainder := flowCount % opts.BatchSize
+			var packets []Netflow
 			for i := 0; i < iterations; i++ {
+				generated := GenerateNetflow(opts.BatchSize, engineId)
+				if count == 3 && i == 0 {
+					continue
+				}
+				packets = append(packets, generated)
 				total += opts.BatchSize
-				generate(conn, opts.BatchSize)
+			}
+			// go build && ./nflow-generator -t 127.0.0.1 -p 9995 --duration 0 --interval 10000 --flow-count 2 --times 5 --batch-size 2
+			if count == 2 {
+				p2 := packets[len(packets)-2]
+				p1 := packets[len(packets)-1]
+				packets[len(packets)-1] = p2
+				packets[len(packets)-2] = p1
+			}
+			for _, packet := range packets {
+				fmt.Printf("\t[Packet] Seq=%d Count=%d\n", packet.Header.FlowSequence, packet.Header.FlowCount)
+				buffer := BuildNFlowPayload(packet)
+				_, err := conn.Write(buffer.Bytes())
+				if err != nil {
+					log.Fatal("Error connecting to the target collector: ", err)
+				}
 			}
 
 			if remainder > 0 {
 				total += remainder
-				generate(conn, remainder)
+				generate(conn, remainder, engineId)
 			}
 
 			//total += opts.FlowCount
@@ -134,8 +155,8 @@ func loop(done chan bool, ticker *time.Ticker, prevTotal int, flowCount int, tim
 	return 0
 }
 
-func generate(conn *net.UDPConn, batchSize int) {
-	data := GenerateNetflow(batchSize)
+func generate(conn *net.UDPConn, batchSize int, engineId uint8) {
+	data := GenerateNetflow(batchSize, engineId)
 	buffer := BuildNFlowPayload(data)
 	_, err := conn.Write(buffer.Bytes())
 	if err != nil {
