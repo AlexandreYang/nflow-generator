@@ -122,19 +122,19 @@ func loop(done chan bool, ticker *time.Ticker, prevTotal int, flowCount int, tim
 			var packets []Netflow
 			for i := 0; i < iterations; i++ {
 				generated := GenerateNetflow(opts.BatchSize, engineId)
-				if count == 3 && i == 0 {
-					continue
-				}
+				//if count == 3 && i == 0 {
+				//	continue
+				//}
 				packets = append(packets, generated)
 				total += opts.BatchSize
 			}
 			// go build && ./nflow-generator -t 127.0.0.1 -p 9995 --duration 0 --interval 10000 --flow-count 2 --times 5 --batch-size 2
-			if count == 2 {
-				p2 := packets[len(packets)-2]
-				p1 := packets[len(packets)-1]
-				packets[len(packets)-1] = p2
-				packets[len(packets)-2] = p1
-			}
+			//if count == 2 {
+			//	p2 := packets[len(packets)-2]
+			//	p1 := packets[len(packets)-1]
+			//	packets[len(packets)-1] = p2
+			//	packets[len(packets)-2] = p1
+			//}
 			for _, packet := range packets {
 				fmt.Printf("\t[Packet] Seq=%d Count=%d\n", packet.Header.FlowSequence, packet.Header.FlowCount)
 				buffer := BuildNFlowPayload(packet)
