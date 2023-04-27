@@ -78,9 +78,9 @@ func main() {
 	start := time.Now()
 
 	go func() {
-		total := loop(done, ticker, 0, 1000, 30, conn, start, opts.EngineId)
+		total := loop(done, ticker, 0, 2500, 20, conn, start, opts.EngineId)
 		total = loop(done, ticker, total, 50000, 60, conn, start, opts.EngineId)
-		total = loop(done, ticker, total, 1000, 30, conn, start, opts.EngineId)
+		total = loop(done, ticker, total, 2500, 20, conn, start, opts.EngineId)
 
 		//times := opts.Times - 1
 		//
