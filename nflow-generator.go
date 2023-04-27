@@ -72,17 +72,15 @@ func main() {
 	log.Infof("sending netflow data to a collector ip: %s and port: %s. \n"+
 		"Use ctrl^c to terminate the app.", opts.CollectorIP, opts.CollectorPort)
 
-	ticker := time.NewTicker(time.Duration(opts.Interval) * time.Millisecond)
+	ticker := time.NewTicker(time.Duration(100) * time.Millisecond)
 	done := make(chan bool)
 
 	start := time.Now()
 
 	go func() {
-		total := loop(done, ticker, 0, 1250, 40, conn, start, opts.EngineId)
-		total = loop(done, ticker, total, 10000, 60, conn, start, opts.EngineId)
-		total = loop(done, ticker, total, 50000, 60, conn, start, opts.EngineId)
-		total = loop(done, ticker, total, 10000, 60, conn, start, opts.EngineId)
-		total = loop(done, ticker, total, 1250, 40, conn, start, opts.EngineId)
+		total := loop(done, ticker, 0, 100, 600, conn, start, opts.EngineId)
+		total = loop(done, ticker, total, 5000, 600, conn, start, opts.EngineId)
+		total = loop(done, ticker, total, 100, 600, conn, start, opts.EngineId)
 
 		//times := opts.Times - 1
 		//
